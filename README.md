@@ -78,14 +78,29 @@ Admin: [http://localhost:3000/admin/login](http://localhost:3000/admin/login)
 | `MONGODB_URI` | MongoDB connection string |
 | `JWT_SECRET` | Secret for admin JWT |
 | `CLOUDINARY_*` | Cloudinary credentials for signed admin uploads |
+| `CORS_ORIGINS` | Comma-separated frontend URLs (local + Vercel) |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Seed admin credentials |
 
-**Frontend `.env.local`**
+**Frontend `.env.local` (local)**
 
 | Variable | Description |
 |----------|-------------|
 | `NEXT_PUBLIC_API_URL` | FastAPI base URL (`http://localhost:8000`) |
 | `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name |
+
+**Vercel (production frontend)**
+
+Set `NEXT_PUBLIC_API_URL` to your **public backend URL** (not `localhost`).
+
+**Backend host (Render / Railway / etc.)**
+
+Set the same env vars as `backend/.env`, especially:
+
+```text
+CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,https://a-2-z-ply-city-center.vercel.app
+```
+
+Redeploy the API after changing `CORS_ORIGINS`.
 
 ## Phase 1 features
 

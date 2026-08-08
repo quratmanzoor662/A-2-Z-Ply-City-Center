@@ -33,9 +33,12 @@ def create_app() -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=config.cors_origin_list,
+        # Preview deployments: https://a-2-z-ply-city-center-*.vercel.app
+        allow_origin_regex=r"https://([a-z0-9-]+\.)?a-2-z-ply-city-center\.vercel\.app",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
+        expose_headers=["*"],
     )
 
     app.include_router(auth.router)
