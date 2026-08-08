@@ -1,0 +1,239 @@
+A-2-Z Ply City Center — Phase 1 MVP
+
+Decisions locked
+
+Scope: Phase 1 MVP (storefront + admin). Wishlist/cart/payments/reviews are deferred; product schema only reserves room where cheap (e.g. viewCount).
+
+Stack: Next.js 15 (App Router) + TypeScript + Tailwind + Framer Motion + Swiper | FastAPI + MongoDB (Motor) | Cloudinary | JWT admin auth.
+
+Images: Cloudinary via signed uploads from admin; store public URLs + public_id on documents.
+
+Monorepo layout:
+
+[frontend/](frontend/) — Next.js customer site + admin UI
+[backend/](backend/) — FastAPI API
+
+Root README.md with env and run instructions
+
+Architecture
+
+flowchart LR
+  Browser --> NextJS[Next.js Frontend]
+  NextJS -->|REST JSON| FastAPI[FastAPI Backend]
+  FastAPI --> MongoDB[(MongoDB)]
+  FastAPI --> Cloudinary[Cloudinary]
+  AdminUI[Admin UI in Next.js] -->|JWT Bearer| FastAPI
+  Storefront[Storefront] -->|Public APIs| FastAPI
+  Storefront -->|WhatsApp deep link + enquiry POST| FastAPI
+
+Design system (storefront)
+
+Premium showroom palette (not Myntra retail colors):
+
+
+
+
+
+Background #F8F8F6, cards #FFFFFF, primary sage #6E8B5E, wood accent #C49A6C, text #2D2D2D
+
+
+
+Expressive typography (e.g. Fraunces + DM Sans via next/font)
+
+
+
+Warm off-white + subtle wood/grain atmosphere; full-bleed hero; no card-heavy hero; Framer Motion for 2–3 intentional section/product motions
+
+
+
+Admin UI: functional dense layout in the same palette, not a second brand exercise
+
+Data models (MongoDB)
+
+Collections: admins, settings, categories, brands, banners, products, enquiries.
+
+Product (core):
+
+
+
+
+
+Basic: name, slug, sku, categoryId, brandId, shortDescription, description, status, isFeatured, isNewArrival, viewCount
+
+
+
+Pricing defaults: mrp, sellingPrice, discount (computed or stored)
+
+
+
+Images (product-level fallback): ordered { url, publicId, alt, sortOrder }[]
+
+
+
+Variants: { id, name, color?, size?, sku?, mrp, sellingPrice, stock, images[] }[] — selecting a variant swaps gallery + price/stock
+
+
+
+Specs: dynamic { key, value }[]
+
+
+
+Filters denormalized for listing: colors[], materials[], finishes[], inStock, minPrice, maxPrice
+
+
+
+Timestamps: createdAt, updatedAt
+
+Enquiry: customerName, phone, productId, productName, variantId, variantName, status (pending|contacted|completed), createdAt
+
+Settings: store name, logo, WhatsApp number, email, address, maps embed/url, social links, opening hours
+
+Banner: desktop/mobile image URLs, title, subtitle, button text/link, sortOrder, active
+
+Seed script: one admin, settings, sample categories (Plywood, Laminates, Veneers, Bathroom Accessories, Door Locks, Hardware, Adhesives, Lighting, Plumbing, Power Tools), a few brands, banners, and demo products with multi-image variants.
+
+Backend API surface
+
+[backend/app/](backend/app/) structure: main.py, config.py, db.py, auth/, routers/, models/, schemas/, services/cloudinary.py, seed.py.
+
+Public:
+
+
+
+
+
+GET /api/settings, /api/banners, /api/categories, /api/brands
+
+
+
+GET /api/products — search q, filters (category, brand, price min/max, color, material, finish, availability), sort (price_asc|price_desc|newest|popular)
+
+
+
+GET /api/products/{slug} — increments viewCount
+
+
+
+GET /api/products/{id}/similar
+
+
+
+POST /api/enquiries — create enquiry (storefront quote flow)
+
+Admin (JWT):
+
+
+
+
+
+POST /api/admin/auth/login, GET /api/admin/auth/me
+
+
+
+CRUD: products, categories, brands, banners
+
+
+
+GET/PATCH /api/admin/enquiries, dashboard GET /api/admin/dashboard
+
+
+
+GET/PUT /api/admin/settings
+
+
+
+POST /api/admin/uploads/signature — Cloudinary signed upload params for client-side upload
+
+Auth: bcrypt password hash, JWT access tokens, protect admin routers with dependency.
+
+Frontend routes
+
+Storefront ([frontend/app/(store)/](frontend/app/(store)/)):
+
+
+
+
+
+/ — hero (Swiper banners), featured categories, best sellers, new arrivals, brands, why us, testimonials, contact/location
+
+
+
+/categories, /categories/[slug]
+
+
+
+/products — listing with search + sidebar filters + sort
+
+
+
+/products/[slug] — gallery (zoom), variant picker (gallery swaps), specs, features, similar, Get Quote on WhatsApp
+
+
+
+Contact section uses settings address/maps/WhatsApp
+
+Admin ([frontend/app/admin/](frontend/app/admin/)):
+
+
+
+
+
+/admin/login
+
+
+
+/admin dashboard (totals, recent, low stock, most viewed)
+
+
+
+Products list + create/edit (multi-image drag-reorder, variants with per-variant images/price/stock, dynamic specs)
+
+
+
+Categories, Brands, Banners, Enquiries (status updates), Settings
+
+Shared: API client with public base URL, auth token in httpOnly cookie or localStorage for admin (prefer httpOnly cookie via Next route handlers if straightforward; otherwise Bearer in memory + localStorage for MVP).
+
+WhatsApp quote flow: collect name/phone → POST /api/enquiries → open https://wa.me/{number}?text=... with product/variant prefilled.
+
+Implementation order
+
+
+
+
+
+Scaffold monorepo, env examples, Docker Compose for MongoDB only
+
+
+
+Backend: config, DB, auth, all models/schemas, seed, public + admin routers, Cloudinary signature
+
+
+
+Frontend design tokens + layout shells (store + admin)
+
+
+
+Storefront pages wired to API (home → listing → PDP)
+
+
+
+Admin CRUD UIs ending with product editor (heaviest)
+
+
+
+Enquiry + settings + dashboard polish
+
+
+
+Seed demo content and README runbook
+
+Env vars (examples)
+
+Backend: MONGODB_URI, JWT_SECRET, CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET, CORS_ORIGINS, ADMIN_EMAIL, ADMIN_PASSWORD (seed)
+
+Frontend: NEXT_PUBLIC_API_URL, NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET (unsigned preset only if needed; prefer signed flow)
+
+Out of scope for Phase 1
+
+Wishlist, cart, payments, order tracking, reviews, PDF quotes, PWA, AI search, multi-language, analytics beyond basic dashboard counts.
