@@ -90,7 +90,13 @@ Admin: [http://localhost:3000/admin/login](http://localhost:3000/admin/login)
 
 **Vercel (production frontend)**
 
-Set `NEXT_PUBLIC_API_URL` to your **public backend URL** (not `localhost`).
+```text
+BACKEND_URL=https://YOUR-PUBLIC-API.onrender.com
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=axtspqrc
+```
+
+Remove any `NEXT_PUBLIC_API_URL=http://localhost:8000` from Vercel.  
+Production uses same-origin `/api-backend` proxy (never localhost). See [DEPLOY.md](DEPLOY.md).
 
 **Backend host (Render / Railway / etc.)**
 

@@ -33,8 +33,8 @@ def create_app() -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=config.cors_origin_list,
-        # Preview deployments: https://a-2-z-ply-city-center-*.vercel.app
-        allow_origin_regex=r"https://([a-z0-9-]+\.)?a-2-z-ply-city-center\.vercel\.app",
+        # All Vercel production + preview URLs (e.g. *-qurat-s-team.vercel.app)
+        allow_origin_regex=r"https://.*\.vercel\.app",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

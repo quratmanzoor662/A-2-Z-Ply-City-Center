@@ -41,19 +41,32 @@ PYTHONPATH=. python -m app.seed
 
 ## 2) Point Vercel frontend to that API
 
-In Vercel → Project → Settings → Environment Variables:
+In Vercel → Project → Settings → Environment Variables  
+Apply to **Production, Preview, and Development**:
 
 ```text
-NEXT_PUBLIC_API_URL=https://YOUR-SERVICE.onrender.com
+BACKEND_URL=https://YOUR-SERVICE.onrender.com
 NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=axtspqrc
 ```
 
-Redeploy the frontend (Deployments → Redeploy).
+Important:
+
+- Use **`BACKEND_URL`** only (server-side proxy). Browser calls `/api-backend/*` (same origin → no CORS).
+- **Delete** `NEXT_PUBLIC_API_URL` from Vercel entirely (Production + Preview).  
+  If it points at Render/localhost, the browser calls it cross-origin → CORS error.
+- Do **not** put `localhost` in any Vercel env var.
+
+Redeploy the frontend (Deployments → Redeploy). A new build is required.
+
+Also redeploy/restart the **backend** after CORS updates so preview URLs are allowed as a fallback.
 
 ## 3) Verify
 
 - `https://YOUR-SERVICE.onrender.com/api/products` returns products
-- `https://a-2-z-ply-city-center.vercel.app` shows banners, products, categories
+- On `https://a-2-z-ply-city-center.vercel.app`, Network tab should show:
+  - `/api-backend/api/categories` (same origin)
+  - **not** `http://localhost:8000/...`
+- Homepage shows banners, products, categories
 
 ## Local development (unchanged)
 

@@ -1,3 +1,4 @@
+import { getApiBaseUrl } from "./apiBase";
 import type {
   Banner,
   Brand,
@@ -8,8 +9,6 @@ import type {
   ProductListResponse,
   StoreSettings,
 } from "./types";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export class ApiError extends Error {
   status: number;
@@ -28,7 +27,8 @@ async function request<T>(path: string, init: RequestInit = {}, token?: string |
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const res = await fetch(`${API_URL}${path}`, {
+  const base = getApiBaseUrl();
+  const res = await fetch(`${base}${path}`, {
     ...init,
     headers,
     cache: "no-store",
